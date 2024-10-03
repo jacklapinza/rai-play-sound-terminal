@@ -1,0 +1,87 @@
+Header {
+  background:purple;
+  margin-bottom: 1;
+  height: 3;
+  dock: top;
+  content-align: center middle;
+}
+
+#header-text {
+  margin-top: 1;
+  text-align: center;
+  content-align: center middle;
+}
+
+
+#description {
+
+  margin-top: 5;
+  text-align: left;
+  height: 20;
+}
+
+Footer {
+  margin-top: 1;
+  height: 3;
+  dock: bottom;
+}
+
+/*END FOOTER AND HEADER*/
+
+
+/*SIDEBAR--------------------------------------------------------------------------*/
+
+SideBar {
+  width: 1fr; 
+  margin-right: 1;
+  margin-left: 1;
+}
+
+SideBar Button {
+  width: 100%;
+}
+
+/*END SIDEBAR--------------------------------------------------------------------------*/
+
+
+#main-content {
+  width:4fr;
+  margin-right: 1;
+  content-align: center middle;
+}
+
+#current_live_radio_text {
+  border: white;
+  margin-top: 1;
+  text-align: center; 
+  content-align: center middle;
+}
+
+#player_buttons {
+  layout: horizontal;
+}
+
+#player_buttons Button {
+  margin-left: 1;
+  margin-right: 1;
+
+}
+
+#main-list Button{
+  width: 100%;
+      
+}
+
+#pause {
+  background: lightblue;
+}
+
+#continue {
+  display: none;
+}
+
+.master_button #continue {
+  display: block;
+}
+
+
