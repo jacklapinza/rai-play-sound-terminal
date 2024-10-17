@@ -111,7 +111,7 @@ class PodcastInfo:
     def podcast_list(self):
 
         podcasts = {
-            "Ruggito------ del Coniglio": {
+            "Ruggito del Coniglio": {
                 "url": "https://www.raiplaysound.it/programmi/ilruggitodelconiglio",
                 "logo": "/home/jack/Pictures/Logos/ruggito_coniglio.png"
             },
@@ -127,7 +127,6 @@ class PodcastInfo:
 
         self.podcast_names = list(podcasts.keys())
 
-        # self.podcast_names = ['Ruggito Del Coniglio', 'Lillo E Greg 610', 'Viva Radio 2']
         return self.podcast_names
 
 
