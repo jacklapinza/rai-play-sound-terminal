@@ -11,7 +11,6 @@ class Header(Static):
     def compose(self) -> ComposeResult:
         yield Static("Rai Sound Terminal Player", id="header-text")
 
-
 # class Footer(Placeholder):  
 #     pass
 
@@ -77,15 +76,30 @@ class RadioChannelName(VerticalScroll):
 
 #END-------------------------Live Radio Channel list---------------------------------------
 
-#START-------------------------Podcast---------------------------------------
-class PodcastList(VerticalScroll):
+#START-------------------------Podcast buttons list---------------------------------------
+class PodcastName(Static):
+    def __init__(self, radio_name, **kwargs):
+        super().__init__(**kwargs)
+        self.radio_name = radio_name  # Store the radio_name passed
+
     def compose(self) -> ComposeResult:
-        yield Button("Ruggito Del Coniglio", id="ruggito")
-        yield Button("Viva Radio 2", id="viva-radio-2")
+        # Use self.radio_name to generate the buttons, not a static list
+        with Center(id="main-list"):
+            yield Button(f"{self.radio_name}", id=f"{self.radio_name.lower().strip().replace(' ', '').replace('è', 'e').replace('ü', 'u')}")
 
 
-#END-------------------------Podcast---------------------------------------
 
+class PodcastChannelName(VerticalScroll):
+    
+    def compose(self) -> ComposeResult:
+
+        radio_list = PodcastInfo().podcast_list()
+        for radio_id in radio_list:
+
+            yield PodcastName(f"{radio_id}")
+
+
+#END-------------------------END Podcast buttons list---------------------------------------
 
 
 #START-------------------------Sidebar---------------------------------------
@@ -105,7 +119,7 @@ class SideBar(Static):
             self.update("")
             self.app.clear_main_content()
             main_content = self.app.query_one("#main-content")
-            main_content.mount(PodcastList())
+            main_content.mount(PodcastChannelName())
 
     def compose(self) -> ComposeResult:
         yield Button("Live Radio", id="live-radio")
@@ -146,16 +160,11 @@ class AppScreen(Screen):
                 main_content.mount(Loading())
                 main_content.mount(Static(description_channel[x], id="description"))
 
-                
-
-            elif button_id == "podcast":
-                try:
-                    self.update("")
-                except:
-                    pass
+            elif button_id == "ruggito":
                 self.app.clear_main_content()
                 main_content = self.app.query_one("#main-content")
-                main_content.mount(PodcastList())
+                main_content.mount(Static("Prova"))
+                main_content.mount(Loading())
 
     def compose(self) -> ComposeResult:
         yield Header(id="Header")  

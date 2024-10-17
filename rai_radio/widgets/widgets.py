@@ -100,4 +100,36 @@ class RaiRadioInfo:
 
         return output, description_channel, interval_time
 
+
+
+class PodcastInfo:
+
+    def __init__(self) -> None:
+        pass
+
+
+    def podcast_list(self):
+
+        podcasts = {
+            "Ruggito------ del Coniglio": {
+                "url": "https://www.raiplaysound.it/programmi/ilruggitodelconiglio",
+                "logo": "/home/jack/Pictures/Logos/ruggito_coniglio.png"
+            },
+            "Lillo e Greg 610": {
+                "url": "https://www.raiplaysound.it/programmi/lilloegreg610/puntate/stagione-2023-24",
+                "logo": "/home/jack/Pictures/Logos/lillo_e_greg_610.png"
+            },
+            "Viva Radio 2": {
+                "url": "https://www.raiplaysound.it/programmi/vivarai2",
+                "logo": "/home/jack/Pictures/Logos/viva_radio_2.png"
+            },
+        }
+
+        self.podcast_names = list(podcasts.keys())
+
+        # self.podcast_names = ['Ruggito Del Coniglio', 'Lillo E Greg 610', 'Viva Radio 2']
+        return self.podcast_names
+
+
+
 # print(RaiRadioInfo().parsing_data()[2])
