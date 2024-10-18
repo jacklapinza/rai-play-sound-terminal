@@ -13,6 +13,7 @@ requests = "^2.32.3"
 numpy = "^2.1.1"
 sounddevice = "^0.5.0"
 beautifulsoup4 = "^4.12.3"
+yt-dlp = "^2024.10.7"
 
 
 [build-system]

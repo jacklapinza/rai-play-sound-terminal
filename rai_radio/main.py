@@ -186,18 +186,23 @@ class AppScreen(Screen):
                 main_content.mount(Static(description_channel[x], id="description"))
 
         if button_id == "ruggitodelconiglio":
-            episodes = PodcastInfo('https://www.raiplaysound.it/programmi/ilruggitodelconiglio')
+            url = 'https://www.raiplaysound.it/programmi/ilruggitodelconiglio' 
+            episodes = PodcastInfo(url)
             episodes_date = episodes.episodes_date()[0]
             self.app.clear_main_content()
             main_content = self.app.query_one("#main-content")
             main_content.mount(PodcastEpisodeList(episodes_date))
 
-        list_id_ruggito = PodcastInfo('https://www.raiplaysound.it/programmi/ilruggitodelconiglio') 
-        list_id_ruggito_complete = list_id_ruggito.episodes_date()[1]
+        url = 'https://www.raiplaysound.it/programmi/ilruggitodelconiglio'
+        instance = PodcastInfo(url) 
+        list_id_ruggito_complete = instance.episodes_date()[1]
         for x in list_id_ruggito_complete:
             if button_id == x:
                 self.app.clear_main_content()
-            
+                date_ref = x[11:]
+                main_content = self.app.query_one("#main-content")
+                main_content.mount(Loading())
+                instance.mpv_stream(instance.extract_audio_url(instance.episode_stream_url(date_ref)), date_ref , '/home/jack/Pictures/Logos/ruggito_coniglio.png')
 
     def compose(self) -> ComposeResult:
         yield Header(id="Header")  

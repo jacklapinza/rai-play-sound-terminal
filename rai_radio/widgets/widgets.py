@@ -5,6 +5,8 @@ import json
 import os
 import time
 from bs4 import BeautifulSoup
+import yt_dlp
+import subprocess
 
 class RaiRadioInfo:
     '''
@@ -131,9 +133,35 @@ class PodcastInfo:
             options.append(f"Puntata del: {date}")
             list_id.append(f"Puntata del: {date}".lower().strip().replace(' ', '').replace(':', '_'))
 
-        print(self.date_url_dict)
+        # print(self.date_url_dict)
+        # print(list_id[0][11:])
         return options, list_id
 
+
+    def episode_stream_url(self, date):
+
+        stream_url = self.date_url_dict[date]
+        return stream_url
+
+
+
+    def extract_audio_url(self, episode_url):
+        ydl_opts = {'quiet': True, 'force_generic_extractor': True}
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(episode_url, download=False)
+            if 'url' in info:
+                return info['url']
+            else:
+                print("Unable to extract audio URL.")
+                return None
+
+
+    def mpv_stream(self, episode_url, date_selected, logo_path): 
+        self.podcast_title = "Prova"
+        stream_url = self.extract_audio_url(episode_url)
+        command = f'nohup mpv --force-window=yes --audio-file="{stream_url}" {logo_path} --loop-file=inf --osd-playing-msg="{date_selected}" > /dev/null 2>&1 &'
+        subprocess.run(command, shell=True)
+                
 def podcast_list():
 
     podcasts = {
@@ -156,4 +184,10 @@ def podcast_list():
     return podcast_names
 
 
-print(PodcastInfo('https://www.raiplaysound.it/programmi/ilruggitodelconiglio').episodes_date()[1])
+# print(PodcastInfo('https://www.raiplaysound.it/programmi/ilruggitodelconiglio').episodes_date()[1])
+# PodcastInfo('https://www.raiplaysound.it/programmi/ilruggitodelconiglio').episode_stream_url('18-10-2024')
+#
+# f = PodcastInfo('https://www.raiplaysound.it/programmi/ilruggitodelconiglio')
+#
+# f.extract_audio_url(f.episode_stream_url('18-10-2024'))
+
