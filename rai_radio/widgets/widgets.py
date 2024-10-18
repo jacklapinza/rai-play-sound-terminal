@@ -1,8 +1,10 @@
 from typing import List
+from datetime import datetime
 import requests
 import json
 import os
 import time
+from bs4 import BeautifulSoup
 
 class RaiRadioInfo:
     '''
@@ -104,31 +106,54 @@ class RaiRadioInfo:
 
 class PodcastInfo:
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, url):
+        self.url = url
+        self.response = requests.get(self.url)
+        self.soup = BeautifulSoup(self.response.text, 'html.parser')
+        self.date_url_dict = {}
+
+        for tag in self.soup.find_all('rps-playlist-action'):
+            options = tag.get('options')
+            options_dict = json.loads(options.replace('&quot;', '"'))
+            audio_url = options_dict.get('url').replace('.json', '.html')
+            try:
+                date_str = f"https://www.raiplaysound.it{audio_url}".split("-")[-6]
+                date_object = datetime.strptime(date_str, '%d%m%Y')
+                date = date_object.strftime('%d-%m-%Y')
+                self.date_url_dict[date] = f"https://www.raiplaysound.it{audio_url}"
+            except:
+                pass
+
+    def episodes_date(self):
+        options = []
+        list_id = []
+        for date in self.date_url_dict:
+            options.append(f"Puntata del: {date}")
+            list_id.append(f"Puntata del: {date}".lower().strip().replace(' ', '').replace(':', '_'))
+
+        print(self.date_url_dict)
+        return options, list_id
+
+def podcast_list():
+
+    podcasts = {
+        "Ruggito del Coniglio": {
+            "url": "https://www.raiplaysound.it/programmi/ilruggitodelconiglio",
+            "logo": "/home/jack/Pictures/Logos/ruggito_coniglio.png"
+        },
+        "Lillo e Greg 610": {
+            "url": "https://www.raiplaysound.it/programmi/lilloegreg610/puntate/stagione-2023-24",
+            "logo": "/home/jack/Pictures/Logos/lillo_e_greg_610.png"
+        },
+        "Viva Radio 2": {
+            "url": "https://www.raiplaysound.it/programmi/vivarai2",
+            "logo": "/home/jack/Pictures/Logos/viva_radio_2.png"
+        },
+    }
+
+    podcast_names = list(podcasts.keys())
+
+    return podcast_names
 
 
-    def podcast_list(self):
-
-        podcasts = {
-            "Ruggito del Coniglio": {
-                "url": "https://www.raiplaysound.it/programmi/ilruggitodelconiglio",
-                "logo": "/home/jack/Pictures/Logos/ruggito_coniglio.png"
-            },
-            "Lillo e Greg 610": {
-                "url": "https://www.raiplaysound.it/programmi/lilloegreg610/puntate/stagione-2023-24",
-                "logo": "/home/jack/Pictures/Logos/lillo_e_greg_610.png"
-            },
-            "Viva Radio 2": {
-                "url": "https://www.raiplaysound.it/programmi/vivarai2",
-                "logo": "/home/jack/Pictures/Logos/viva_radio_2.png"
-            },
-        }
-
-        self.podcast_names = list(podcasts.keys())
-
-        return self.podcast_names
-
-
-
-# print(RaiRadioInfo().parsing_data()[2])
+print(PodcastInfo('https://www.raiplaysound.it/programmi/ilruggitodelconiglio').episodes_date()[1])

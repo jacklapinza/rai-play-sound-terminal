@@ -93,10 +93,35 @@ class PodcastChannelName(VerticalScroll):
     
     def compose(self) -> ComposeResult:
 
-        radio_list = PodcastInfo().podcast_list()
+        radio_list = podcast_list()
         for radio_id in radio_list:
 
             yield PodcastName(f"{radio_id}")
+
+#----------------------------------------------------------------------------------------------------------
+
+class PodcastEpisode(Static):
+    def __init__(self, radio_name, **kwargs):
+        super().__init__(**kwargs)
+        self.radio_name = radio_name  # Store the radio_name passed
+
+    def compose(self) -> ComposeResult:
+        # Use self.radio_name to generate the buttons, not a static list
+        with Center(id="main-list"):
+            yield Button(f"{self.radio_name}", id=f"{self.radio_name.lower().strip().replace(' ', '').replace(':', '_')}")
+
+
+
+class PodcastEpisodeList(VerticalScroll):
+    def __init__(self, podcast, **kwargs):
+        super().__init__(**kwargs)
+        self.podcast = podcast  # Store the radio_name passed
+   
+    def compose(self) -> ComposeResult:
+
+        for radio_id in self.podcast:
+
+            yield PodcastEpisode(f"{radio_id}")
 
 
 #END-------------------------END Podcast buttons list---------------------------------------
@@ -160,11 +185,19 @@ class AppScreen(Screen):
                 main_content.mount(Loading())
                 main_content.mount(Static(description_channel[x], id="description"))
 
-            elif button_id == "ruggito":
+        if button_id == "ruggitodelconiglio":
+            episodes = PodcastInfo('https://www.raiplaysound.it/programmi/ilruggitodelconiglio')
+            episodes_date = episodes.episodes_date()[0]
+            self.app.clear_main_content()
+            main_content = self.app.query_one("#main-content")
+            main_content.mount(PodcastEpisodeList(episodes_date))
+
+        list_id_ruggito = PodcastInfo('https://www.raiplaysound.it/programmi/ilruggitodelconiglio') 
+        list_id_ruggito_complete = list_id_ruggito.episodes_date()[1]
+        for x in list_id_ruggito_complete:
+            if button_id == x:
                 self.app.clear_main_content()
-                main_content = self.app.query_one("#main-content")
-                main_content.mount(Static("Prova"))
-                main_content.mount(Loading())
+            
 
     def compose(self) -> ComposeResult:
         yield Header(id="Header")  
