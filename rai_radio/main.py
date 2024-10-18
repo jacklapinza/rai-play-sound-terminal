@@ -93,7 +93,7 @@ class PodcastChannelName(VerticalScroll):
     
     def compose(self) -> ComposeResult:
 
-        radio_list = podcast_list()
+        radio_list = podcast_list()[0]
         for radio_id in radio_list:
 
             yield PodcastName(f"{radio_id}")
@@ -185,24 +185,26 @@ class AppScreen(Screen):
                 main_content.mount(Loading())
                 main_content.mount(Static(description_channel[x], id="description"))
 
-        if button_id == "ruggitodelconiglio":
-            url = 'https://www.raiplaysound.it/programmi/ilruggitodelconiglio' 
-            episodes = PodcastInfo(url)
-            episodes_date = episodes.episodes_date()[0]
-            self.app.clear_main_content()
-            main_content = self.app.query_one("#main-content")
-            main_content.mount(PodcastEpisodeList(episodes_date))
-
-        url = 'https://www.raiplaysound.it/programmi/ilruggitodelconiglio'
-        instance = PodcastInfo(url) 
-        list_id_ruggito_complete = instance.episodes_date()[1]
-        for x in list_id_ruggito_complete:
-            if button_id == x:
+        possibile_podcasts = podcast_list()[0]
+        possibile_podcasts_ids = [x.strip().lower().replace(" ", "") for x in possibile_podcasts]
+        for x,y in zip(possibile_podcasts, possibile_podcasts_ids):
+            if button_id == y:
                 self.app.clear_main_content()
-                date_ref = x[11:]
+                url = podcast_list()[1][x]['url'] 
+                episodes = PodcastInfo(url)
+                episodes_date = episodes.episodes_date()[0]
                 main_content = self.app.query_one("#main-content")
-                main_content.mount(Loading())
-                instance.mpv_stream(instance.extract_audio_url(instance.episode_stream_url(date_ref)), date_ref , '/home/jack/Pictures/Logos/ruggito_coniglio.png')
+                main_content.mount(PodcastEpisodeList(episodes_date))
+
+            instance = PodcastInfo(podcast_list()[1][x]['url']) 
+            list_id_complete = instance.episodes_date()[1]
+            for f in list_id_complete:
+                if button_id == f:
+                    self.app.clear_main_content()
+                    date_ref = f[11:]
+                    main_content = self.app.query_one("#main-content")
+                    main_content.mount(Loading())
+                    instance.mpv_stream(instance.extract_audio_url(instance.episode_stream_url(date_ref)), date_ref , podcast_list()[1][x]['logo'])
 
     def compose(self) -> ComposeResult:
         yield Header(id="Header")  

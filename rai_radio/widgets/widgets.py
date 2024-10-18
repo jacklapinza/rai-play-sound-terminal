@@ -177,17 +177,19 @@ def podcast_list():
             "url": "https://www.raiplaysound.it/programmi/vivarai2",
             "logo": "/home/jack/Pictures/Logos/viva_radio_2.png"
         },
+        "Bla Bla": {
+            "url": "https://www.raiplaysound.it/programmi/blablabla",
+            "logo": "/home/jack/Pictures/Logos/blabla.png"
+        },
     }
 
     podcast_names = list(podcasts.keys())
 
-    return podcast_names
+    return podcast_names, podcasts
 
 
 # print(PodcastInfo('https://www.raiplaysound.it/programmi/ilruggitodelconiglio').episodes_date()[1])
 # PodcastInfo('https://www.raiplaysound.it/programmi/ilruggitodelconiglio').episode_stream_url('18-10-2024')
-#
 # f = PodcastInfo('https://www.raiplaysound.it/programmi/ilruggitodelconiglio')
-#
 # f.extract_audio_url(f.episode_stream_url('18-10-2024'))
-
+# podcast_list()
