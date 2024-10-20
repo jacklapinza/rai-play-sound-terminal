@@ -1,4 +1,6 @@
 from typing import List
+import unicodedata
+import re
 from datetime import datetime
 import requests
 import json
@@ -7,6 +9,7 @@ import time
 from bs4 import BeautifulSoup
 import yt_dlp
 import subprocess
+import xml.etree.ElementTree as ET
 
 class RaiRadioInfo:
     '''
@@ -106,25 +109,77 @@ class RaiRadioInfo:
 
 
 
+
+def normalize_and_replace(episode):
+    # Normalize the string to NFC form (combines characters with accents into a single code point)
+    normalized_episode = unicodedata.normalize('NFC', episode.strip().lower())
+    
+    # Now replace the characters
+    return normalized_episode.replace("#", "")\
+        .replace(" ", "")\
+        .replace("'", "")\
+        .replace("&", "")\
+        .replace("pieropelù", "u")\
+        .replace("ú", "")\
+        .replace("(", "")\
+        .replace(")", "")
+
+
+def tintoria_episodes():
+    rss_feed_url = 'https://www.spreaker.com/show/2830173/episodes/feed'
+    response = requests.get(rss_feed_url)
+
+    root = ET.fromstring(response.content)
+
+    enclosure_urls = []
+    for item in root.findall(".//item"):
+        enclosure = item.find("enclosure")
+        if enclosure is not None and 'url' in enclosure.attrib:
+            enclosure_urls.append(enclosure.attrib['url'])
+
+    titles = []
+    for item in root.findall(".//item"):
+        title = item.find("title")
+        if title is not None:
+            titles.append(title.text)
+
+    tintoria_list = {}
+
+    fake = "10-10-2024"
+
+    stop = 0
+    for episode,url in zip(titles, enclosure_urls):
+        if stop == 100:
+            break
+        else:
+            tintoria_list[fake + normalize_and_replace(episode)] = url
+            stop = stop +1
+
+    return tintoria_list
+
+
 class PodcastInfo:
 
     def __init__(self, url):
         self.url = url
-        self.response = requests.get(self.url)
-        self.soup = BeautifulSoup(self.response.text, 'html.parser')
-        self.date_url_dict = {}
+        if self.url == "dummy":
+            self.date_url_dict = tintoria_episodes()
+        else:
+            self.response = requests.get(self.url)
+            self.soup = BeautifulSoup(self.response.text, 'html.parser')
+            self.date_url_dict = {}
 
-        for tag in self.soup.find_all('rps-playlist-action'):
-            options = tag.get('options')
-            options_dict = json.loads(options.replace('&quot;', '"'))
-            audio_url = options_dict.get('url').replace('.json', '.html')
-            try:
-                date_str = f"https://www.raiplaysound.it{audio_url}".split("-")[-6]
-                date_object = datetime.strptime(date_str, '%d%m%Y')
-                date = date_object.strftime('%d-%m-%Y')
-                self.date_url_dict[date] = f"https://www.raiplaysound.it{audio_url}"
-            except:
-                pass
+            for tag in self.soup.find_all('rps-playlist-action'):
+                options = tag.get('options')
+                options_dict = json.loads(options.replace('&quot;', '"'))
+                audio_url = options_dict.get('url').replace('.json', '.html')
+                try:
+                    date_str = f"https://www.raiplaysound.it{audio_url}".split("-")[-6]
+                    date_object = datetime.strptime(date_str, '%d%m%Y')
+                    date = date_object.strftime('%d-%m-%Y')
+                    self.date_url_dict[date] = f"https://www.raiplaysound.it{audio_url}"
+                except:
+                    pass
 
     def episodes_date(self):
         options = []
@@ -144,8 +199,12 @@ class PodcastInfo:
         return stream_url
 
 
-
     def extract_audio_url(self, episode_url):
+        # Check if the URL is already a direct media file link (e.g., .mp3 or .mp4)
+        if re.search(r'\.(mp3|mp4|m4a|ogg|wav)$', episode_url):
+            return episode_url  # Direct link, no need to extract
+
+        # Otherwise, use yt-dlp to extract the URL
         ydl_opts = {'quiet': True, 'force_generic_extractor': True}
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(episode_url, download=False)
@@ -154,7 +213,6 @@ class PodcastInfo:
             else:
                 print("Unable to extract audio URL.")
                 return None
-
 
     def mpv_stream(self, episode_url, date_selected, logo_path): 
         self.podcast_title = "Prova"
@@ -181,6 +239,10 @@ def podcast_list():
             "url": "https://www.raiplaysound.it/programmi/blablabla",
             "logo": "/home/jack/Pictures/Logos/blabla.png"
         },
+        "La tintoria" : {
+            "url": "dummy",
+            "logo": "/home/jack/Pictures/Logos/tintoria.png"
+        },
     }
 
     podcast_names = list(podcasts.keys())
@@ -193,3 +255,4 @@ def podcast_list():
 # f = PodcastInfo('https://www.raiplaysound.it/programmi/ilruggitodelconiglio')
 # f.extract_audio_url(f.episode_stream_url('18-10-2024'))
 # podcast_list()
+print(tintoria_episodes())

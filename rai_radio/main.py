@@ -1,3 +1,4 @@
+from time import sleep
 from textual.app import App, ComposeResult
 from textual.screen import Screen
 from textual.widgets import Placeholder, Button, Static, LoadingIndicator, Footer
@@ -141,8 +142,8 @@ class SideBar(Static):
             main_content.mount(RadioChannelName())
 
         elif button_id == "podcast":
-            self.update("")
             self.app.clear_main_content()
+            self.update("")
             main_content = self.app.query_one("#main-content")
             main_content.mount(PodcastChannelName())
 
