@@ -10,6 +10,8 @@ from bs4 import BeautifulSoup
 import yt_dlp
 import subprocess
 import xml.etree.ElementTree as ET
+from widgets.tintoria_video import read_video_repsonse 
+
 
 class RaiRadioInfo:
     '''
@@ -164,6 +166,8 @@ class PodcastInfo:
         self.url = url
         if self.url == "dummy":
             self.date_url_dict = tintoria_episodes()
+        elif self.url == "tintoria_video":
+            self.date_url_dict = read_video_repsonse()
         else:
             self.response = requests.get(self.url)
             self.soup = BeautifulSoup(self.response.text, 'html.parser')
@@ -203,6 +207,8 @@ class PodcastInfo:
         # Check if the URL is already a direct media file link (e.g., .mp3 or .mp4)
         if re.search(r'\.(mp3|mp4|m4a|ogg|wav)$', episode_url):
             return episode_url  # Direct link, no need to extract
+        # elif re.search(r'\.(youtube)$', episode_url):
+        #     return episode_url  # Direct link, no need to extract
 
         # Otherwise, use yt-dlp to extract the URL
         ydl_opts = {'quiet': True, 'force_generic_extractor': True}
@@ -217,8 +223,20 @@ class PodcastInfo:
     def mpv_stream(self, episode_url, date_selected, logo_path): 
         self.podcast_title = "Prova"
         stream_url = self.extract_audio_url(episode_url)
-        command = f'nohup mpv --force-window=yes --audio-file="{stream_url}" {logo_path} --loop-file=inf --osd-playing-msg="{date_selected}" > /dev/null 2>&1 &'
+        if re.search(r'\.(mp3|mp4|m4a|ogg|wav)$', episode_url):
+            command = f'nohup mpv {stream_url} > /dev/null 2>&1 &'
+            subprocess.run(command, shell=True)
+        else:
+            command = f'nohup mpv --force-window=yes --audio-file="{stream_url}" {logo_path} --loop-file=inf --osd-playing-msg="{date_selected}" > /dev/null 2>&1 &'
+            subprocess.run(command, shell=True)
+
+    def mpv_stream_youtube(self, episode_url): 
+        self.podcast_title = "Prova"
+        stream_url = episode_url
+        command = f'nohup mpv {stream_url} > /dev/null 2>&1 &'
         subprocess.run(command, shell=True)
+
+
                 
 def podcast_list():
 
@@ -247,7 +265,17 @@ def podcast_list():
 
     podcast_names = list(podcasts.keys())
 
-    return podcast_names, podcasts
+
+    podcasts_video = {
+        "Tintoria Youtube": {
+            "url": "tintoria_video",
+            "logo": "/home/jack/Pictures/Logos/ruggito_coniglio.png"
+        },
+    }
+
+    podcasts_video_names = list(podcasts_video.keys())
+
+    return podcast_names, podcasts, podcasts_video_names, podcasts_video
 
 
 # print(PodcastInfo('https://www.raiplaysound.it/programmi/ilruggitodelconiglio').episodes_date()[1])
@@ -255,4 +283,5 @@ def podcast_list():
 # f = PodcastInfo('https://www.raiplaysound.it/programmi/ilruggitodelconiglio')
 # f.extract_audio_url(f.episode_stream_url('18-10-2024'))
 # podcast_list()
-print(tintoria_episodes())
+# print(tintoria_episodes())
+# print(get_channel_videos())

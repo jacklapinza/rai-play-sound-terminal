@@ -101,6 +101,31 @@ class PodcastChannelName(VerticalScroll):
 
 #----------------------------------------------------------------------------------------------------------
 
+
+class VideoPodcastName(Static):
+    def __init__(self, radio_name, **kwargs):
+        super().__init__(**kwargs)
+        self.radio_name = radio_name  # Store the radio_name passed
+
+    def compose(self) -> ComposeResult:
+        # Use self.radio_name to generate the buttons, not a static list
+        with Center(id="main-list"):
+            yield Button(f"{self.radio_name}", id=f"{self.radio_name.lower().strip().replace(' ', '').replace('è', 'e').replace('ü', 'u')}")
+
+
+
+class VideoPodcastChannelName(VerticalScroll):
+    
+    def compose(self) -> ComposeResult:
+
+        radio_list = podcast_list()[2]
+        for radio_id in radio_list:
+
+            yield VideoPodcastName(f"{radio_id}")
+
+
+
+
 class PodcastEpisode(Static):
     def __init__(self, radio_name, **kwargs):
         super().__init__(**kwargs)
@@ -125,6 +150,34 @@ class PodcastEpisodeList(VerticalScroll):
             yield PodcastEpisode(f"{radio_id}")
 
 
+
+
+class VideoPodcastEpisode(Static):
+    def __init__(self, radio_name, **kwargs):
+        super().__init__(**kwargs)
+        self.radio_name = radio_name  # Store the radio_name passed
+
+    def compose(self) -> ComposeResult:
+        # Use self.radio_name to generate the buttons, not a static list
+        with Center(id="main-list"):
+            yield Button(f"{self.radio_name}", id=f"{self.radio_name.lower().strip().replace(' ', '').replace(':', '_')}")
+
+
+
+class VideoPodcastEpisodeList(VerticalScroll):
+    def __init__(self, podcast, **kwargs):
+        super().__init__(**kwargs)
+        self.podcast = podcast  # Store the radio_name passed
+   
+    def compose(self) -> ComposeResult:
+
+        for radio_id in self.podcast:
+
+            yield VideoPodcastEpisode(f"{radio_id}")
+
+
+
+
 #END-------------------------END Podcast buttons list---------------------------------------
 
 
@@ -147,9 +200,16 @@ class SideBar(Static):
             main_content = self.app.query_one("#main-content")
             main_content.mount(PodcastChannelName())
 
+        elif button_id == "podcast-video":
+            self.app.clear_main_content()
+            self.update("")
+            main_content = self.app.query_one("#main-content")
+            main_content.mount(VideoPodcastChannelName())
+
     def compose(self) -> ComposeResult:
         yield Button("Live Radio", id="live-radio")
         yield Button("Podcast", id='podcast')
+        yield Button("Podcast Video", id='podcast-video')
 
 
 
@@ -206,6 +266,32 @@ class AppScreen(Screen):
                     main_content = self.app.query_one("#main-content")
                     main_content.mount(Loading())
                     instance.mpv_stream(instance.extract_audio_url(instance.episode_stream_url(date_ref)), date_ref , podcast_list()[1][x]['logo'])
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------
+        possibile_podcasts_video = podcast_list()[2]
+        possibile_podcasts_ids_video = [x.strip().lower().replace(" ", "") for x in possibile_podcasts_video]
+        for x,y in zip(possibile_podcasts_video, possibile_podcasts_ids_video):
+            if button_id == "tintoriayoutube":
+                self.app.clear_main_content()
+                self.app.clear_main_content()
+                url = podcast_list()[3][x]['url'] 
+                episodes = PodcastInfo(url)
+                episodes_date = episodes.episodes_date()[0]
+                main_content = self.app.query_one("#main-content")
+                main_content.mount(VideoPodcastEpisodeList(episodes_date))
+
+            instance = PodcastInfo(podcast_list()[3][x]['url']) 
+            list_id_complete_video = instance.episodes_date()[1]
+            for m in list_id_complete_video:
+                if button_id == m:
+                    self.app.clear_main_content()
+                    date_ref = m[11:]
+                    main_content = self.app.query_one("#main-content")
+                    main_content.mount(Loading())
+                    f = instance.episode_stream_url(date_ref) 
+                    main_content.mount(Static(f))
+                    instance.mpv_stream_youtube(instance.episode_stream_url(date_ref))
 
     def compose(self) -> ComposeResult:
         yield Header(id="Header")  
